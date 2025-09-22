@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neural Network House Price Predictor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #2c3e50;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 48%, rgba(255,255,255,0.03) 50%, transparent 52%);
+        }
+        
+        .header h1 {
+            font-size: 2.8em;
+            font-weight: 700;
+            margin-bottom: 15px;
+            letter-spacing: -0.5px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            padding: 40px;
+        }
+        
+        .input-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .results-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .individual-house-section {
+            grid-column: 1 / -1;
+            margin-top: 30px;
+            padding: 30px;
+            background: linear-gradient(135deg, #f1f3f4 0%, #f8f9fa 100%);
+            border-radius: 12px;
+            border: 1px solid #1565c0;
+            position: relative;
+        }
+        
+        .individual-house-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: #1565c0;
+            border-radius: 2px;
+        }
+        
+        .section-title {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: #1565c0;
+            margin-right: 12px;
+            border-radius: 2px;
+        }
+        
+        .input-group {
+            margin-bottom: 24px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+            color: #2c3e50;
+        }
+        
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #1565c0;
+            box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.1);
+        }
+        
+        .input-group small {
+            display: block;
+            margin-top: 6px;
+            color: #6c757d;
+            font-size: 0.85em;
+            font-style: italic;
+        }
+        
+        .predict-buttons {
+            display: grid;
+            gap: 16px;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 16px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #1565c0 0%, #1976d2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(21, 101, 192, 0.3);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(44, 62, 80, 0.3);
+        }
+        
+        .btn-info {
+            background: linear-gradient(135deg, #37474f 0%, #455a64 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(55, 71, 79, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+        
+        .sample-data-btn {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 25px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .sample-data-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+        }
+        
+        .results {
+            display: none;
+        }
+        
+        .result-card {
+            background: white;
+            margin: 20px 0;
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            position: relative;
+        }
+        
+        .result-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: #1565c0;
+            border-radius: 2px;
+        }
+        
+        .result-card h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-weight: 600;
+            font-size: 1.2em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .price-display {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #1565c0;
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 2px solid #1565c0;
+        }
+        
+        .metrics {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 20px;
+        }
+        
+        .metric {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #e9ecef;
+        }
+        
+        .metric-label {
+            font-size: 0.85em;
+            color: #6c757d;
+            margin-bottom: 8px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .metric-value {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        
+        .comparison-table th,
+        .comparison-table td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .comparison-table th {
+            background: #2c3e50;
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.85em;
+        }
+        
+        .comparison-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .comparison-table tr:first-child {
+            background: linear-gradient(135deg, #e3f2fd 0%, #f1f8e9 100%);
+            font-weight: 600;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .spinner {
+            border: 4px solid #e9ecef;
+            border-top: 4px solid #1565c0;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            background: linear-gradient(135deg, #ffebee 0%, #fce4ec 100%);
+            color: #c62828;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #c62828;
+            font-weight: 500;
+        }
+        
+        .approach-selector {
+            margin-bottom: 25px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 30px;
+                padding: 20px;
+            }
+            
+            .metrics {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2.2em;
+            }
+            
+            .price-display {
+                font-size: 2em;
+            }
+        }
+        
+        /* Professional animations */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Neural Network House Price Predictor</h1>
+            <p>Professional Real Estate Valuation System • 7 Advanced ML Approaches</p>
+        </div>
+        
+        <div class="main-content">
+            <!-- Input Section -->
+            <div class="input-section">
+                <h2 class="section-title">Property Details</h2>
+                
+                <button class="sample-data-btn" onclick="loadSampleData()">
+                    Load Sample Data
+                </button>
+                
+                <form id="predictionForm">
+                    <div class="input-group">
+                        <label for="med_inc">Area Median Income ($10K units)</label>
+                        <input type="number" id="med_inc" step="0.01" value="8.32" min="0" max="20" required>
+                        <small>Example: 8.32 = $83,200 median income in this area</small>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="house_age">Median House Age (years)</label>
+                        <input type="number" id="house_age" value="41" min="0" max="100" required>
+                        <small>Median age of all houses in neighborhood</small>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="ave_rooms">Average Rooms per House</label>
+                        <input type="number" id="ave_rooms" step="0.01" value="6.98" min="1" max="20" required>
+                        <small>Average across all houses in neighborhood</small>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="ave_bedrms">Bedrooms per Room Ratio</label>
+                        <input type="number" id="ave_bedrms" step="0.01" value="1.02" min="0" max="3" required>
+                        <small>Bedrooms-to-rooms ratio in the area</small>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="population">Block Population</label>
+                        <input type="number" id="population" value="322" min="1" max="50000" required>
+                        <small>Total people living in this census block</small>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="ave_occup">Average Household Size</label>
+                        <input type="number" id="ave_occup" step="0.01" value="2.56" min="0" max="20" required>
+                        <small>Average people per house in the area</small>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="latitude">Latitude</label>
+                        <input type="number" id="latitude" step="0.01" value="37.88" min="30" max="45" required>
+                        <small>Geographic coordinates</small>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="longitude">Longitude</label>
+                        <input type="number" id="longitude" step="0.01" value="-122.23" min="-130" max="-110" required>
+                        <small>Geographic coordinates</small>
+                    </div>
+                    
+                    <div class="predict-buttons">
+                        <div class="approach-selector">
+                            <label for="approach">Select ML Approach:</label>
+                            <select id="approach">
+                                <option value="">Choose specific approach...</option>
+                                <option value="vectorized">Vectorized (Best Performance)</option>
+                                <option value="object_oriented">Object-Oriented</option>
+                                <option value="functional">Functional Programming</option>
+                                <option value="sequential">Sequential Layers</option>
+                                <option value="gradient_first">Gradient-First</option>
+                                <option value="modular">Modular System</option>
+                                <option value="incremental">Incremental Complexity</option>
+                            </select>
+                        </div>
+                        
+                        <button type="button" class="btn btn-primary" onclick="predictSingle()">
+                            Predict with Selected Approach
+                        </button>
+                        
+                        <button type="button" class="btn btn-secondary" onclick="predictAll()">
+                            Compare All 7 Approaches
+                        </button>
+                        
+                        <button type="button" class="btn btn-info" onclick="showComparison()">
+                            View Performance Analysis
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Results Section -->
+            <div class="results-section">
+                <h2 class="section-title">Analysis Results</h2>
+                
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Processing predictions...</p>
+                </div>
+                
+                <div id="results" class="results">
+                    <p style="color: #6c757d; font-style: italic;">Enter property details and click predict to see results.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Individual House Calculator -->
+        <div class="individual-house-section">
+            <h2 class="section-title">Individual Property Calculator</h2>
+            <p style="color: #6c757d; margin-bottom: 25px;">Adjust the area prediction for your specific property:</p>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px;">
+                <div class="input-group">
+                    <label for="your_rooms">Your Property - Total Rooms:</label>
+                    <input type="number" id="your_rooms" value="1" min="1" max="20" required>
+                </div>
+                
+                <div class="input-group">
+                    <label for="your_bedrooms">Your Property - Bedrooms:</label>
+                    <input type="number" id="your_bedrooms" value="1" min="1" max="10" required>
+                </div>
+                
+                <div class="input-group">
+                    <label for="your_house_age">Your Property - Age (years):</label>
+                    <input type="number" id="your_house_age" value="35" min="0" max="100" required>
+                </div>
+            </div>
+            
+            <button type="button" class="btn btn-primary" onclick="calculateIndividualPrice()" style="margin-top: 20px;">
+                Calculate Individual Property Price
+            </button>
+            
+            <div id="individual-result" style="display: none; margin-top: 25px;">
+                <!-- Individual house result will show here -->
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        
+        // Sample data sets
+        const sampleData = [
+            {
+                med_inc: 8.32, house_age: 41, ave_rooms: 6.98, ave_bedrms: 1.02,
+                population: 322, ave_occup: 2.56, latitude: 37.88, longitude: -122.23
+            },
+            {
+                med_inc: 5.64, house_age: 25, ave_rooms: 5.81, ave_bedrms: 1.07,
+                population: 558, ave_occup: 2.55, latitude: 37.85, longitude: -122.25
+            },
+            {
+                med_inc: 3.85, house_age: 52, ave_rooms: 6.28, ave_bedrms: 1.08,
+                population: 565, ave_occup: 2.18, latitude: 37.85, longitude: -122.25
+            }
+        ];
+        
+        // Store best prediction globally
+        let bestPredictionPrice = 0;
+        
+        function loadSampleData() {
+            const sample = sampleData[Math.floor(Math.random() * sampleData.length)];
+            Object.keys(sample).forEach(key => {
+                const element = document.getElementById(key);
+                if (element) element.value = sample[key];
+            });
+        }
+        
+        function getFormData() {
+            return {
+                med_inc: parseFloat(document.getElementById('med_inc').value),
+                house_age: parseFloat(document.getElementById('house_age').value),
+                ave_rooms: parseFloat(document.getElementById('ave_rooms').value),
+                ave_bedrms: parseFloat(document.getElementById('ave_bedrms').value),
+                population: parseFloat(document.getElementById('population').value),
+                ave_occup: parseFloat(document.getElementById('ave_occup').value),
+                latitude: parseFloat(document.getElementById('latitude').value),
+                longitude: parseFloat(document.getElementById('longitude').value)
+            };
+        }
+        
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+        }
+        
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('results').style.display = 'block';
+        }
+        
+        function showError(message) {
+            hideLoading();
+            document.getElementById('results').innerHTML = `
+                <div class="error fade-in">
+                    <h3>Error</h3>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+        
+        async function predictSingle() {
+            const approach = document.getElementById('approach').value;
+            if (!approach) {
+                alert('Please select an approach first!');
+                return;
+            }
+            
+            const data = getFormData();
+            showLoading();
+            
+            try {
+                const response = await fetch(`${API_BASE}/predict/${approach}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    bestPredictionPrice = result.result.predicted_price_numeric;
+                    displaySingleResult(result.result);
+                } else {
+                    throw new Error(result.detail || 'Prediction failed');
+                }
+            } catch (error) {
+                showError(`Prediction failed: ${error.message}`);
+            }
+        }
+        
+        function displaySingleResult(result) {
+            hideLoading();
+            
+            document.getElementById('results').innerHTML = `
+                <div class="result-card fade-in">
+                    <h3>${result.approach.replace('_', ' ').toUpperCase()} APPROACH</h3>
+                    
+                    <div class="price-display">
+                        ${result.predicted_price}
+                    </div>
+                    
+                    <div class="metrics">
+                        <div class="metric">
+                            <div class="metric-label">Model Confidence</div>
+                            <div class="metric-value">${result.confidence_r2}</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Prediction Time</div>
+                            <div class="metric-value">${result.prediction_time} ms</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Training RMSE</div>
+                            <div class="metric-value">${Math.sqrt(result.performance_metrics.mse).toFixed(4)}</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">R² Score</div>
+                            <div class="metric-value">${result.performance_metrics.r2.toFixed(4)}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        async function predictAll() {
+            const data = getFormData();
+            showLoading();
+            
+            try {
+                const response = await fetch(`${API_BASE}/predict-all`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    // Store best prediction for individual calculator
+                    bestPredictionPrice = parseFloat(result.summary?.average_prediction?.replace(/[$K]/g, '')) || 450;
+                    displayAllResults(result);
+                } else {
+                    throw new Error(result.detail || 'Predictions failed');
+                }
+            } catch (error) {
+                showError(`Predictions failed: ${error.message}`);
+            }
+        }
+        
+        function displayAllResults(result) {
+            hideLoading();
+            
+            let html = `
+                <div class="result-card fade-in">
+                    <h3>COMPARISON SUMMARY</h3>
+                    <div class="metrics">
+                        <div class="metric">
+                            <div class="metric-label">Best Approach</div>
+                            <div class="metric-value">${result.best_approach?.replace('_', ' ') || 'N/A'}</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Average Prediction</div>
+                            <div class="metric-value">${result.summary?.average_prediction || 'N/A'}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Add individual approach results
+            if (result.predictions) {
+                Object.entries(result.predictions).forEach(([approach, pred]) => {
+                    if (!pred.error) {
+                        const isBest = approach === result.best_approach;
+                        
+                        html += `
+                            <div class="result-card fade-in" style="border-left-color: ${isBest ? '#1565c0' : '#6c757d'}">
+                                <h3>
+                                    ${pred.approach.replace('_', ' ').toUpperCase()}
+                                    ${isBest ? ' (BEST)' : ''}
+                                </h3>
+                                
+                                <div class="price-display" style="color: ${isBest ? '#1565c0' : '#6c757d'}">
+                                    ${pred.predicted_price}
+                                </div>
+                                
+                                <div class="metrics">
+                                    <div class="metric">
+                                        <div class="metric-label">Confidence</div>
+                                        <div class="metric-value">${pred.confidence_r2}</div>
+                                    </div>
+                                    <div class="metric">
+                                        <div class="metric-label">Speed</div>
+                                        <div class="metric-value">${pred.prediction_time} ms</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+            }
+            
+            document.getElementById('results').innerHTML = html;
+        }
+        
+        async function showComparison() {
+            showLoading();
+            
+            try {
+                const response = await fetch(`${API_BASE}/compare`);
+                const result = await response.json();
+                
+                displayComparison(result);
+            } catch (error) {
+                showError(`Failed to load comparison: ${error.message}`);
+            }
+        }
+        
+        function displayComparison(result) {
+            hideLoading();
+            
+            let html = `
+                <div class="result-card fade-in">
+                    <h3>PERFORMANCE ANALYSIS</h3>
+                    <p style="margin-bottom: 20px;"><strong>Best Approach:</strong> ${result.best_approach} (R² = ${result.best_r2?.toFixed(4)})</p>
+                    
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Approach</th>
+                                <th>Accuracy</th>
+                                <th>R² Score</th>
+                                <th>RMSE</th>
+                                <th>Training Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            if (result.comparison) {
+                result.comparison.forEach((item, index) => {
+                    const rowClass = index === 0 ? 'style="background-color: #e3f2fd; font-weight: 600;"' : '';
+                    html += `
+                        <tr ${rowClass}>
+                            <td>${item.rank_by_accuracy}${index === 0 ? ' 🏆' : ''}</td>
+                            <td>${item.approach}</td>
+                            <td>${item.accuracy_percentage}</td>
+                            <td>${item.r2_score.toFixed(4)}</td>
+                            <td>${item.rmse.toFixed(4)}</td>
+                            <td>${item.training_time.toFixed(2)}s</td>
+                        </tr>
+                    `;
+                });
+            }
+            
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            document.getElementById('results').innerHTML = html;
+        }
+        
+        function calculateIndividualPrice() {
+            // Use stored best prediction or default
+            const areaPrediction = bestPredictionPrice || 450;
+            
+            // Get area features
+            const areaFeatures = {
+                ave_rooms: parseFloat(document.getElementById('ave_rooms').value),
+                ave_bedrms: parseFloat(document.getElementById('ave_bedrms').value),
+                house_age: parseFloat(document.getElementById('house_age').value)
+            };
+            
+            // Get your house features
+            const yourHouse = {
+                rooms: parseInt(document.getElementById('your_rooms').value),
+                bedrooms: parseInt(document.getElementById('your_bedrooms').value),
+                age: parseInt(document.getElementById('your_house_age').value)
+            };
+            
+            // Calculate adjustment
+            const roomFactor = yourHouse.rooms / areaFeatures.ave_rooms;
+            const bedroomFactor = yourHouse.bedrooms / (areaFeatures.ave_bedrms * areaFeatures.ave_rooms);
+            const ageFactor = Math.max(0.8, Math.min(1.2, (areaFeatures.house_age - yourHouse.age) * 0.01 + 1));
+            
+            const adjustmentFactor = (roomFactor + bedroomFactor) / 2 * ageFactor;
+            const adjustedPrice = areaPrediction * adjustmentFactor;
+            
+            // Display result
+            document.getElementById('individual-result').innerHTML = `
+                <div class="result-card fade-in">
+                    <h3>Individual Property Valuation</h3>
+                    <div class="price-display" style="color: #37474f;">
+                        $${adjustedPrice.toFixed(0)}K
+                    </div>
+                    <div class="metrics">
+                        <div class="metric">
+                            <div class="metric-label">Area Median Price</div>
+                            <div class="metric-value">$${areaPrediction}K</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Size Adjustment</div>
+                            <div class="metric-value">${(roomFactor * 100).toFixed(0)}%</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Price Range</div>
+                            <div class="metric-value">$${(adjustedPrice * 0.8).toFixed(0)}K - $${(adjustedPrice * 1.2).toFixed(0)}K</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-label">Confidence</div>
+                            <div class="metric-value">±20%</div>
+                        </div>
+                    </div>
+                    <p style="margin-top: 20px; font-size: 0.9em; color: #6c757d; font-style: italic;">
+                        This is an estimate based on area data. Actual price depends on specific location, 
+                        condition, amenities, and current market conditions.
+                    </p>
+                </div>
+            `;
+            document.getElementById('individual-result').style.display = 'block';
+        }
+        
+        // Load sample data on page load
+        window.onload = () => {
+            loadSampleData();
+        };
+    </script>
+</body>
+</html>
