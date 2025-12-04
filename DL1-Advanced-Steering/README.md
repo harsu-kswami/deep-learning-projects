@@ -80,7 +80,7 @@ High-quality performance for behavioral cloning.
 📌 Add `steering_distribution.png`
 
 ### **4️⃣ Speed Prediction Curve**
-📌 Add `speed_curve.png`
+📌 Add `[speed_curve.png](https://github.com/harsu-kswami/deep-learning-projects/blob/main/DL1-Advanced-Steering/outputs/plots/final_curve.png)`
 
 ### **5️⃣ Video Demonstration**
 Upload your video file:
