@@ -68,39 +68,26 @@ High-quality performance for behavioral cloning.
 
 ---
 
-# 📉 Visual Outputs (Upload Your Files Here)
+## 📉 Visual Outputs
 
-### **1️⃣ Steering: Actual vs Predicted**
-📌 Add ``
+### ✔ Final Curve
+![Final Curve](https://raw.githubusercontent.com/harsu-kswami/deep-learning-projects/main/DL1-Advanced-Steering/outputs/plots/final_curve.png)
 
-### **2️⃣ Error Histogram**
-📌 Add `error_hist.png`
+### ✔ Error Histogram
+![Error Histogram](https://raw.githubusercontent.com/harsu-kswami/deep-learning-projects/main/DL1-Advanced-Steering/outputs/plots/error_hist.png)
 
-### **3️⃣ Steering Distribution**
-📌 Add `steering_distribution.png`
-
-### **4️⃣ Speed Prediction Curve**
-📌## 📈 Speed Prediction Curve
-
+### ✔ Speed Curve
 ![Speed Curve](https://raw.githubusercontent.com/harsu-kswami/deep-learning-projects/main/DL1-Advanced-Steering/outputs/plots/speed_curve.png)
 
+### ✔ LSTM Curve
+![LSTM Curve](https://raw.githubusercontent.com/harsu-kswami/deep-learning-projects/main/DL1-Advanced-Steering/outputs/plots/lstm_curve.png)
 
-### **5️⃣ Video Demonstration**
-Upload your video file:
+### ✔ Steering Curve
+![Steering Curve](https://raw.githubusercontent.com/harsu-kswami/deep-learning-projects/main/DL1-Advanced-Steering/outputs/plots/steering_curve.png)
 
-outputs/demo_videos/lstm_demo.mp4
+### ✔ Steering Distribution
+![Steering Distribution](https://raw.githubusercontent.com/harsu-kswami/deep-learning-projects/main/DL1-Advanced-Steering/outputs/plots/steering_distribution.png)
 
-kotlin
-Copy code
-
-Embed like this:
-
-https://github.com/YOUR_USERNAME/YOUR_REPO/raw/main/outputs/demo_videos/lstm_demo.mp4
-
-yaml
-Copy code
-
----
 
 # 🤖 ONNX Export (Deployment Ready)
 
